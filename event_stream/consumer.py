@@ -2,8 +2,12 @@ import os
 import sys
 import django
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from confluent_kafka import Consumer
+
+import time
+last_flush = time.time()
+FLUSH_INTERVAL = 5  # seconds
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
@@ -38,7 +42,7 @@ try:
             continue
 
         log = json.loads(msg.value().decode("utf-8"))
-        print(f"Consumed: {log['service_name']} - {log['level']}")
+        print(f"Consumed: {log['service_name']} - {log['level']} - {log['timestamp']}")
         batch.append(
             LogEntry(
                 service_name=log["service_name"],
@@ -46,13 +50,15 @@ try:
                 message=log["message"],
                 timestamp=datetime.fromisoformat(log["timestamp"]),
                 metadata=log.get("metadata",{}),
-                created_at=datetime.now()
+                created_at=datetime.now(timezone.utc)
             )
         )
-
-        if len(batch) >= BATCH_SIZE:
-            LogEntry.objects.insert(batch)
-            batch.clear()
+        print("Saving log:", log)
+        if len(batch) >= BATCH_SIZE or time.time() - last_flush > FLUSH_INTERVAL:
+            if batch:
+                LogEntry.objects.insert(batch)
+                batch.clear()
+                last_flush = time.time()
 
 except KeyboardInterrupt:
     pass

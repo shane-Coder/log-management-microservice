@@ -128,6 +128,33 @@ python manage.py runserver
 
 ---
 
+## 🚨 Alerting System
+
+- Detects high error rates per service  
+- Uses MongoDB aggregation with time-window filtering  
+- Example: Trigger alert if errors exceed threshold in last 5 minutes  
+
+---
+
+## ⏱ Time Handling
+
+All timestamps are stored in UTC using timezone-aware datetime for consistency across services.
+
+---
+
+{
+  "alerts": [
+    {
+      "service": "payment-service",
+      "error_count": 6
+    }
+  ]
+}
+
+---
+
+- Real-time alerting (similar to Datadog / ELK)
+
 ## 👨‍💻 Author
 
 Shivam

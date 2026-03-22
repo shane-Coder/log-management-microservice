@@ -6,6 +6,7 @@ from .models import LogEntry
 from .serializers import LogEntrySerializer
 
 from event_stream.producer import send_logs
+from .alerting import check_error_threshold
 
 class LogCreateView(APIView):
     def post(self, request):
@@ -58,3 +59,99 @@ class LogSearchView(APIView):
                 "metadata": log.metadata
             })
         return Response(result)
+    
+class ErrorsPerServiceView(APIView):
+    def get(self, request):
+        pipeline = [
+            {"$match": {"level": "ERROR"}},
+            {"$group": {
+                "_id": "$service_name",
+                "error_count": {"$sum": 1}
+            }},
+            {"$sort": {"error_count": -1}}
+        ]
+
+        result = list(LogEntry.objects.aggregate(pipeline))
+
+        return Response([
+            {"service_name": i["_id"], "error_count": i["error_count"]}
+            for i in result
+        ])
+
+class LogsPerServiceView(APIView):
+    def get(self, request):
+        pipeline = [
+            {"$group": {
+                "_id": "$service_name",
+                "log_count": {"$sum": 1}
+            }},
+            {"$sort": {"log_count": -1}}
+        ]
+
+        result = list(LogEntry.objects.aggregate(pipeline))
+
+        return Response([
+            {"service_name": i["_id"], "log_count": i["log_count"]}
+            for i in result
+        ])
+    
+class LogLevelDistributionView(APIView):
+    def get(self, request):
+        pipeline = [
+            {"$group": {
+                "_id": "$level",
+                "count": {"$sum": 1}
+            }},
+            {"$sort": {"count": -1}}
+        ]
+
+        result = list(LogEntry.objects.aggregate(pipeline))
+
+        return Response([
+            {"level": i["_id"], "count": i["count"]}
+            for i in result
+        ])
+    
+class LogsPerMinuteView(APIView):
+    def get(self, request):
+        pipeline = [
+            {"$group": {
+                "_id": {
+                    "$dateToString": {
+                        "format": "%Y-%m-%d %H:%M",
+                        "date": "$timestamp"
+                    }
+                },
+                "count": {"$sum": 1}
+            }},
+            {"$sort": {"_id": 1}}
+        ]
+
+        result = list(LogEntry.objects.aggregate(pipeline))
+        return Response(result)
+    
+class ErrorsPerHourView(APIView):
+    def get(self, request):
+        pipeline = [
+            {"$match": {"level": "ERROR"}},
+            {"$group": {
+                "_id": {
+                    "$dateToString": {
+                        "format": "%Y-%m-%d %H",
+                        "date": "$timestamp"
+                    }
+                },
+                "count": {"$sum": 1}
+            }},
+            {"$sort": {"_id": 1}}
+        ]
+
+        result = list(LogEntry.objects.aggregate(pipeline))
+        return Response(result)
+    
+class AlertView(APIView):
+    def get(self, request):
+        alerts = check_error_threshold()
+        return Response({
+            "alerts": alerts
+        })

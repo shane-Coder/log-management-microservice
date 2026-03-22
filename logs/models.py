@@ -1,5 +1,5 @@
 import mongoengine as me
-from datetime import datetime
+from datetime import datetime, timezone
 
 class LogEntry(me.Document):
     service_name = me.StringField(required=True)
@@ -10,7 +10,7 @@ class LogEntry(me.Document):
     message = me.StringField(required=True)
     timestamp = me.DateTimeField(required=True)
     metadata = me.DictField()
-    created_at = me.DateTimeField(default=lambda: datetime.now())
+    created_at = me.DateTimeField(default=lambda: datetime.now(timezone.utc))
     meta = {
         "collection": "logs",
         "indexes": [
