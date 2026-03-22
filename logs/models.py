@@ -16,9 +16,14 @@ class LogEntry(me.Document):
         "indexes": [
             "service_name",
             "level",
-            "timestamp",
+            "-timestamp",  # recent logs fast
             # compound indexes (VERY IMPORTANT)
-            ("service_name", "timestamp"),
-            ("level", "timestamp"),
+            ("service_name", "-timestamp"),
+            ("level", "-timestamp"),
+            # 🔥 TTL index
+            {
+                "fields": ["created_at"],
+                "expireAfterSeconds": 7 * 24 * 60 * 60  # 7 days
+            }
         ]
     }

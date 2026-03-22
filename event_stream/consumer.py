@@ -6,8 +6,9 @@ from datetime import datetime, timezone
 from confluent_kafka import Consumer
 
 import time
-last_flush = time.time()
+BATCH_SIZE = 50
 FLUSH_INTERVAL = 5  # seconds
+last_flush = time.time()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
@@ -27,7 +28,6 @@ consumer = Consumer({
 consumer.subscribe(["logs"])
 
 batch = []
-BATCH_SIZE = 100
 
 print("Consumer started...")
 
@@ -57,6 +57,7 @@ try:
         if len(batch) >= BATCH_SIZE or time.time() - last_flush > FLUSH_INTERVAL:
             if batch:
                 LogEntry.objects.insert(batch)
+                print(f"Inserted batch of {len(batch)} logs")
                 batch.clear()
                 last_flush = time.time()
 

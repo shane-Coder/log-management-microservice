@@ -16,10 +16,7 @@ class LogCreateView(APIView):
         serializer = LogEntrySerializer(data=logs, many=True)
         serializer.is_valid(raise_exception=True)
         send_logs(serializer.validated_data)
-        return Response(
-            {"message": f"{len(logs)} logs pushed to Kafka"},
-            status=status.HTTP_202_ACCEPTED
-        )
+        return Response({"message": f"{len(logs)} logs pushed to Kafka"}, status=status.HTTP_202_ACCEPTED)
     
 class LogListView(APIView):
     def get(self, request):
@@ -33,7 +30,7 @@ class LogListView(APIView):
                 "timestamp": log.timestamp,
                 "metadata": log.metadata
             })
-        return Response(result)
+        return Response(data=result, status=status.HTTP_200_OK)
 
 class LogSearchView(APIView):
     def get(self, request):
@@ -58,7 +55,7 @@ class LogSearchView(APIView):
                 "timestamp": log.timestamp,
                 "metadata": log.metadata
             })
-        return Response(result)
+        return Response(data=result, status=status.HTTP_200_OK)
     
 class ErrorsPerServiceView(APIView):
     def get(self, request):
@@ -70,13 +67,8 @@ class ErrorsPerServiceView(APIView):
             }},
             {"$sort": {"error_count": -1}}
         ]
-
         result = list(LogEntry.objects.aggregate(pipeline))
-
-        return Response([
-            {"service_name": i["_id"], "error_count": i["error_count"]}
-            for i in result
-        ])
+        return Response([{"service_name": i["_id"], "error_count": i["error_count"]} for i in result])
 
 class LogsPerServiceView(APIView):
     def get(self, request):
@@ -87,13 +79,8 @@ class LogsPerServiceView(APIView):
             }},
             {"$sort": {"log_count": -1}}
         ]
-
         result = list(LogEntry.objects.aggregate(pipeline))
-
-        return Response([
-            {"service_name": i["_id"], "log_count": i["log_count"]}
-            for i in result
-        ])
+        return Response([{"service_name": i["_id"], "log_count": i["log_count"]} for i in result])
     
 class LogLevelDistributionView(APIView):
     def get(self, request):
@@ -104,13 +91,8 @@ class LogLevelDistributionView(APIView):
             }},
             {"$sort": {"count": -1}}
         ]
-
         result = list(LogEntry.objects.aggregate(pipeline))
-
-        return Response([
-            {"level": i["_id"], "count": i["count"]}
-            for i in result
-        ])
+        return Response([{"level": i["_id"], "count": i["count"]} for i in result])
     
 class LogsPerMinuteView(APIView):
     def get(self, request):
@@ -126,9 +108,8 @@ class LogsPerMinuteView(APIView):
             }},
             {"$sort": {"_id": 1}}
         ]
-
         result = list(LogEntry.objects.aggregate(pipeline))
-        return Response(result)
+        return Response(data=result, status=status.HTTP_200_OK)
     
 class ErrorsPerHourView(APIView):
     def get(self, request):
@@ -145,13 +126,16 @@ class ErrorsPerHourView(APIView):
             }},
             {"$sort": {"_id": 1}}
         ]
-
         result = list(LogEntry.objects.aggregate(pipeline))
-        return Response(result)
+        return Response(data=result, status=status.HTTP_200_OK)
     
 class AlertView(APIView):
     def get(self, request):
         alerts = check_error_threshold()
-        return Response({
-            "alerts": alerts
-        })
+        return Response({"alerts": alerts})
+    
+class MetricsView(APIView):
+    def get(self, request):
+        total_logs = LogEntry.objects.count()
+        error_logs = LogEntry.objects(level="ERROR").count()
+        return Response({"total_logs": total_logs, "error_logs": error_logs,})

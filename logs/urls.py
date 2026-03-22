@@ -13,4 +13,6 @@ urlpatterns = [
     path("analytics/errors-per-hour", ErrorsPerHourView.as_view()),
     # Alerts
     path("alerts", AlertView.as_view()),
+    # Metrics
+    path("metrics", MetricsView.as_view()),
 ]
