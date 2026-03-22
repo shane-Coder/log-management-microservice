@@ -9,10 +9,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
 sys.path.append(PROJECT_ROOT)
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.config.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-from core.logs.models import LogEntry
+from logs.models import LogEntry
 
 consumer = Consumer({
     "bootstrap.servers":"localhost:9092",

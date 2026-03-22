@@ -5,7 +5,7 @@ from rest_framework import status
 from .models import LogEntry
 from .serializers import LogEntrySerializer
 
-from core.event_stream.producer import send_logs
+from event_stream.producer import send_logs
 
 class LogCreateView(APIView):
     def post(self, request):
