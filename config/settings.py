@@ -123,6 +123,6 @@ from mongoengine import connect
 
 connect(
     db="log_management_db",
-    host="localhost",
+    host="mongo",
     port=27017
 )

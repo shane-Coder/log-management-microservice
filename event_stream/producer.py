@@ -2,7 +2,7 @@ from confluent_kafka import Producer
 import json
 from datetime import datetime
 
-producer=Producer({"bootstrap.servers":"localhost:9092"})
+producer=Producer({"bootstrap.servers":"kafka:9092"})
 
 def serialize(obj):
     if isinstance(obj,datetime):

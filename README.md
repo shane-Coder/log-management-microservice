@@ -155,6 +155,23 @@ All timestamps are stored in UTC using timezone-aware datetime for consistency a
 
 - Real-time alerting (similar to Datadog / ELK)
 
+---
+## 📊 System Design Highlights
+
+- Event-driven architecture using Kafka
+- Scalable log ingestion pipeline
+- MongoDB aggregation for analytics
+- Alerting based on time-window queries
+- TTL-based log retention
+
+---
+## 🧠 Design Decisions
+
+- Kafka chosen over Celery for scalability
+- MongoDB for flexible schema and aggregation
+- UTC timestamps for consistency
+- Batch processing for performance
+
 ## 👨‍💻 Author
 
 Shivam

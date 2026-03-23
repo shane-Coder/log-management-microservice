@@ -10,7 +10,7 @@ BATCH_SIZE = 50
 FLUSH_INTERVAL = 5  # seconds
 last_flush = time.time()
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
 sys.path.append(PROJECT_ROOT)
 
@@ -20,7 +20,7 @@ django.setup()
 from logs.models import LogEntry
 
 consumer = Consumer({
-    "bootstrap.servers":"localhost:9092",
+    "bootstrap.servers":"kafka:9092",
     "group.id":"log-consumers",
     "auto.offset.reset":"earliest"
 })
@@ -56,10 +56,13 @@ try:
         print("Saving log:", log)
         if len(batch) >= BATCH_SIZE or time.time() - last_flush > FLUSH_INTERVAL:
             if batch:
-                LogEntry.objects.insert(batch)
-                print(f"Inserted batch of {len(batch)} logs")
-                batch.clear()
-                last_flush = time.time()
+                try:
+                    LogEntry.objects.insert(batch)
+                    print(f"Inserted batch of {len(batch)} logs")
+                    batch.clear()
+                    last_flush = time.time()
+                except Exception as e:
+                    print("Retrying...", e)
 
 except KeyboardInterrupt:
     pass
