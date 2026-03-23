@@ -1,177 +1,144 @@
 # Log Management Microservice
 
 ## 🚀 Overview
-
-A scalable log ingestion and analytics system built using Django, Kafka, and MongoDB.
-Designed to mimic real-world observability pipelines like ELK and Datadog.
+A log ingestion and analytics microservice built using Django, Kafka, and MongoDB.  
+This project simulates a real-world observability pipeline similar to ELK or Datadog.
 
 ---
 
 ## 🏗 Architecture
 
-```
-Client → Django API → Kafka → Consumer → MongoDB → Analytics APIs
-```
+Client → Django API → Kafka → Consumer → MongoDB → APIs
 
 ---
 
 ## ⚙️ Tech Stack
 
-* Django REST Framework
-* Apache Kafka (KRaft mode)
-* MongoDB
-* Python
+- Django REST Framework
+- Apache Kafka
+- MongoDB
+- Docker (optional)
+- Python
 
 ---
 
 ## 🔥 Features
 
-* Bulk log ingestion
-* Asynchronous processing via Kafka
-* MongoDB-based storage (flexible schema)
-* Search logs API
-* Scalable event-driven architecture
-* Analytics-ready structure
+- Log ingestion (single & bulk)
+- Asynchronous processing using Kafka
+- MongoDB storage (flexible schema)
+- Log search API
+- Basic alerting (error threshold)
+- Simple analytics (stats API)
 
 ---
 
 ## 📌 APIs
 
 ### Logs
+- POST /api/logs
+- GET /api/logs/list
+- GET /api/logs/search?q=
 
-* `POST /api/logs/` → Ingest logs (single/bulk)
-* `GET /api/logs/list/` → Fetch latest logs
-* `GET /api/logs/search/?q=` → Search logs
+### Alerts
+- GET /api/alerts
 
-### Analytics (Coming Next)
-
-* Errors per service
-* Logs per service
-* Log level distribution
-* Time-series metrics
+### Stats
+- GET /api/stats
 
 ---
 
-## ▶️ How to Run Locally
+## Run with Docker
+
+Start all services:
+
+```
+
+docker-compose up --build
+
+```
+
+Access:
+- API: http://127.0.0.1:8000
+- MongoDB: mongodb://localhost:27018
+
+---
+
+## ▶️ Run Locally (Manual Setup)
 
 ### 1. Start Kafka
 
 ```bash
+
 cd kafka_2.13-4.2.0
 
-# (Run only first time)
+# Run only first time
+
 bin/kafka-storage.sh random-uuid
 bin/kafka-storage.sh format -t <UUID> -c config/server.properties
 
-# Start Kafka
 bin/kafka-server-start.sh config/server.properties
-```
 
----
+```
 
 ### 2. Start Consumer
 
 ```bash
+
 python event_stream/consumer.py
+
 ```
 
----
-
-### 3. Start Django Server
+### 3. Start Django
 
 ```bash
+
 python manage.py runserver
+
 ```
-
----
-
-## ⚙️ How It Works
-
-1. Client sends logs to Django API
-2. API publishes logs to Kafka topic
-3. Consumer reads logs in batches
-4. Logs are stored in MongoDB
-5. Analytics APIs query MongoDB
 
 ---
 
 ## 🧪 Example Log
 
 ```json
+
 {
   "service_name": "auth-service",
-  "level": "INFO",
-  "message": "User login",
+  "level": "ERROR",
+  "message": "Invalid credentials",
   "timestamp": "2026-03-18T18:10:00Z",
   "metadata": {
     "user_id": 101
   }
 }
+
 ```
 
 ---
 
-## 📈 Scalability
+## ⚙️ How It Works
 
-* Kafka enables horizontal scaling via partitions
-* Multiple consumers can process logs in parallel
-* MongoDB supports flexible schema for log data
-
----
-
-## 🚀 Future Improvements
-
-* Alerting system (error thresholds)
-* Grafana dashboards
-* Log retention policies
-* Docker & Kubernetes deployment
+1. Logs are sent to Django API  
+2. API pushes logs to Kafka  
+3. Consumer reads logs in batches  
+4. Logs are stored in MongoDB  
+5. APIs fetch logs and analytics  
 
 ---
 
-## 🚨 Alerting System
+## 🧠 Notes
 
-- Detects high error rates per service  
-- Uses MongoDB aggregation with time-window filtering  
-- Example: Trigger alert if errors exceed threshold in last 5 minutes  
-
----
-
-## ⏱ Time Handling
-
-All timestamps are stored in UTC using timezone-aware datetime for consistency across services.
+- Timestamps are stored in UTC  
+- MongoDB is used for flexible log schema  
+- Kafka enables scalable log processing  
 
 ---
-
-{
-  "alerts": [
-    {
-      "service": "payment-service",
-      "error_count": 6
-    }
-  ]
-}
-
----
-
-- Real-time alerting (similar to Datadog / ELK)
-
----
-## 📊 System Design Highlights
-
-- Event-driven architecture using Kafka
-- Scalable log ingestion pipeline
-- MongoDB aggregation for analytics
-- Alerting based on time-window queries
-- TTL-based log retention
-
----
-## 🧠 Design Decisions
-
-- Kafka chosen over Celery for scalability
-- MongoDB for flexible schema and aggregation
-- UTC timestamps for consistency
-- Batch processing for performance
 
 ## 👨‍💻 Author
 
-Shivam
+Shivam  
+LinkedIn: https://www.linkedin.com/in/programmer-shivam/  
+GitHub: https://github.com/shane-Coder
+
+---
